@@ -16,12 +16,15 @@ function generateToken() {
     return crypto.randomBytes(20).toString('hex');
   }
 // User Registration API
+const maxTime=60;
 router.post('/register', async (req, res) => {
     try {
         const { email, username, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ email, username, password: hashedPassword });
         await newUser.save();
+        const token = jwt.sign({ userId: newUser._id }, 'secret_key',{expiresIn: maxTime});
+        res.cookie('jwt',token,{expiresIn: maxTime, httpOnly: true});
         res.json({ message: 'User registered successfully' });
     } catch (error) {
         console.error(error);
@@ -40,8 +43,9 @@ router.post('/login', async (req, res) => {
         if (!passwordMatch) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
-        const token = jwt.sign({ userId: user._id }, 'secret_key');
-        res.json({ message: 'Login successful', token });
+        const token = jwt.sign({ userId: user._id }, 'secret_key',{expiresIn: maxTime});
+        res.cookie('jwt',token,{expiresIn: maxTime, httpOnly: true});
+        res.json({ message: 'Login successful'});
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });
@@ -71,7 +75,7 @@ router.post('/forgot-password', async (req, res) => {
         from: 'akshat2110045@akgec.ac.in',
         to: email,
         subject: 'Reset Password',
-        text: `Click on the following link to reset your password: http://localhost:${PORT}/reset/${token}`
+        text: `Click on the following link to reset your password: http://localhost:${PORT}/api/user/reset/${token}`
       };
   
       await transporter.sendMail(mailOptions);

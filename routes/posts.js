@@ -11,8 +11,12 @@ const ResetToken = require("../Models/resetpassword_model");
 const User=require("../Models/usermodel");
 const router = express.Router();
 const Post = require("../Models/post");
+const verifyToken=require("../verifyToken");
+const cookieParser=require("cookie-parser");
+router.use(verifyToken); 
+router.use(cookieParser());
 // GET /posts: Retrieve all posts
-router.get('/posts', async (req, res) => {
+router.get('/posts',verifyToken, async (req, res) => {
     try {
       const posts = await Post.find();
       res.json(posts);
@@ -23,7 +27,7 @@ router.get('/posts', async (req, res) => {
 
 // GET /posts/:author: Retrieve a specific post by Auther Name
 
-router.get('/posts/:author', async (req, res) => {
+router.get('/posts/:author',verifyToken,  async (req, res) => {
     let posts;
     try {
       // Retrieve the post based on the author's name
@@ -38,7 +42,7 @@ router.get('/posts/:author', async (req, res) => {
 });
 
 // POST /newpost: Create a new post
-router.post('/newpost', async (req, res) => {
+router.post('/newpost',verifyToken,  async (req, res) => {
     // Extract data from the request body
   const { author, content } = req.body;
   try {
@@ -63,7 +67,7 @@ router.post('/newpost', async (req, res) => {
 
   });
     // PUT /updatepost/:postId: Update an existing post
-router.put('/updatepost/:postId', async (req, res) => {
+router.put('/updatepost/:postId',verifyToken,  async (req, res) => {
   try {
     // Find the post by ID and update its data
     const updatedPost = await Post.findByIdAndUpdate(req.params.postId, req.body, { new: true });
@@ -80,7 +84,7 @@ router.put('/updatepost/:postId', async (req, res) => {
   });
   // delete /:postId to delete a post
 
-  router.delete('/:postId', async (req, res) => {
+  router.delete('/:postId',verifyToken,  async (req, res) => {
     try {
       // Find the post by ID and delete it
       const deletedPost = await Post.findByIdAndDelete(req.params.postId);
@@ -97,7 +101,7 @@ router.put('/updatepost/:postId', async (req, res) => {
   });
   // Endpoint to add a like to a post
   // Like a post
-router.put('/:postId/like', async (req, res) => {
+router.put('/:postId/like',verifyToken,  async (req, res) => {
   try {
     const updatedPost = await Post.findByIdAndUpdate(req.params.postId, { $inc: { likes: 1 } }, { new: true });
     if (!updatedPost) {
@@ -110,7 +114,7 @@ router.put('/:postId/like', async (req, res) => {
   }
 });
 // Endpoint to remove like from a post
-router.put('/:postId/removelike', async(req,res)=>{
+router.put('/:postId/removelike',verifyToken,  async(req,res)=>{
    try{
     const updatedPost=await Post.findByIdAndUpdate(req.params.postId,{$inc: {likes: -1}},{new: true});
     if(!updatedPost){
@@ -123,7 +127,7 @@ router.put('/:postId/removelike', async(req,res)=>{
    }
 });
 // Endpoint to add a comment to a post
-router.put('/:postId/addcomment',async(req,res)=>{
+router.put('/:postId/addcomment',verifyToken, async(req,res)=>{
  
    const {comment}=req.body;
    if (!comment) {
@@ -141,7 +145,7 @@ res.status(500).json({message: "Internal Server Error"});
   }
 });
 // Endpoint to remove a comment from a  post
-router.put('/:postId/removecomment',async(req,res)=>{
+router.put('/:postId/removecomment',verifyToken, async(req,res)=>{
  
   const {comment}=req.body;
   if (!comment) {

@@ -4,8 +4,10 @@ require("dotenv").config();
 const mongoose = require('mongoose');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const cookieParser=require("cookie-parser");
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
+app.use(cookieParser());
 // MongoDB connection
 async function connecttodb() {
     const url = process.env.MONGO_DB;
